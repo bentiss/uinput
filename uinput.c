@@ -364,9 +364,9 @@ static int uinput_setup_device(struct uinput_device *udev,
 	struct input_dev	*dev;
 	int			i;
 	int			retval;
+	size_t			size;
 
-	if (count != sizeof(struct uinput_user_dev))
-		return -EINVAL;
+	size = min_t(size_t, count, sizeof(struct uinput_user_dev));
 
 	if (!udev->dev) {
 		retval = uinput_allocate_device(udev);
@@ -376,9 +376,13 @@ static int uinput_setup_device(struct uinput_device *udev,
 
 	dev = udev->dev;
 
-	user_dev = memdup_user(buffer, sizeof(struct uinput_user_dev));
-	if (IS_ERR(user_dev))
-		return PTR_ERR(user_dev);
+	user_dev = kzalloc(sizeof(struct uinput_user_dev), GFP_KERNEL);
+	if (!user_dev)
+		return -ENOMEM;
+	if (copy_from_user(user_dev, buffer, size)) {
+		retval = -EFAULT;
+		goto exit;
+	}
 
 	udev->ff_effects_max = user_dev->ff_effects_max;
 
@@ -406,6 +410,7 @@ static int uinput_setup_device(struct uinput_device *udev,
 		input_abs_set_min(dev, i, user_dev->absmin[i]);
 		input_abs_set_fuzz(dev, i, user_dev->absfuzz[i]);
 		input_abs_set_flat(dev, i, user_dev->absflat[i]);
+		input_abs_set_res(dev, i, user_dev->absres[i]);
 	}
 
 	/* check if absmin/absmax/absfuzz/absflat are filled as

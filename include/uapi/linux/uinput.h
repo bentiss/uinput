@@ -20,6 +20,8 @@
  * Author: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
  *
  * Changes/Revisions:
+ *	0.4	12/07/2013 (Peter Hutterer <peter.hutterer@redhat.com>)
+ *		  update uinput_user_dev struct to allow abs resolution
  *	0.3	24/05/2006 (Anssi Hannula <anssi.hannulagmail.com>)
  *		- update ff support for the changes in kernel interface
  *		- add UINPUT_VERSION
@@ -133,5 +135,6 @@ struct uinput_user_dev {
 	__s32 absmin[ABS_CNT];
 	__s32 absfuzz[ABS_CNT];
 	__s32 absflat[ABS_CNT];
+	__s32 absres[ABS_CNT];
 };
 #endif /* _UAPI__UINPUT_H_ */
