@@ -21,7 +21,8 @@
  *
  * Changes/Revisions:
  *	0.4	12/07/2013 (Peter Hutterer <peter.hutterer@redhat.com>)
- *		  update uinput_user_dev struct to allow abs resolution
+ *		- update uinput_user_dev struct to allow abs resolution
+ *		- add UI_GET_SYSPATH ioctl
  *	0.3	24/05/2006 (Anssi Hannula <anssi.hannulagmail.com>)
  *		- update ff support for the changes in kernel interface
  *		- add UINPUT_VERSION
@@ -74,6 +75,8 @@ struct uinput_ff_erase {
 #define UI_END_FF_UPLOAD	_IOW(UINPUT_IOCTL_BASE, 201, struct uinput_ff_upload)
 #define UI_BEGIN_FF_ERASE	_IOWR(UINPUT_IOCTL_BASE, 202, struct uinput_ff_erase)
 #define UI_END_FF_ERASE		_IOW(UINPUT_IOCTL_BASE, 203, struct uinput_ff_erase)
+
+#define UI_GET_SYSPATH(len)	_IOC(_IOC_READ, UINPUT_IOCTL_BASE, 300, len)
 
 /*
  * To write a force-feedback-capable driver, the upload_effect

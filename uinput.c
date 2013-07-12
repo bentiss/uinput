@@ -665,6 +665,21 @@ static int uinput_ff_upload_from_user(const char __user *buffer,
 	__ret;						\
 })
 
+static int uinput_str_to_user(const char *str, unsigned int maxlen,
+			      void __user *p)
+{
+	int len;
+
+	if (!str)
+		return -ENOENT;
+
+	len = strlen(str) + 1;
+	if (len > maxlen)
+		len = maxlen;
+
+	return copy_to_user(p, str, len) ? -EFAULT : len;
+}
+
 static long uinput_ioctl_handler(struct file *file, unsigned int cmd,
 				 unsigned long arg, void __user *p)
 {
@@ -674,6 +689,8 @@ static long uinput_ioctl_handler(struct file *file, unsigned int cmd,
 	struct uinput_ff_erase  ff_erase;
 	struct uinput_request   *req;
 	char			*phys;
+	const char		*path;
+	unsigned int		size;
 
 	retval = mutex_lock_interruptible(&udev->mutex);
 	if (retval)
@@ -826,7 +843,24 @@ static long uinput_ioctl_handler(struct file *file, unsigned int cmd,
 			break;
 
 		default:
-			retval = -EINVAL;
+			retval = -EAGAIN;
+	}
+
+	if (retval == -EAGAIN) {
+		size = _IOC_SIZE(cmd);
+
+		/* Now check variable-length commands */
+		switch (cmd & ~IOCSIZE_MASK) {
+			case UI_GET_SYSPATH(0):
+				path = kobject_get_path(&udev->dev->dev.kobj,
+							GFP_KERNEL);
+				retval = uinput_str_to_user(path, size, p);
+				kfree(path);
+				break;
+
+			default:
+				retval = -EINVAL;
+		}
 	}
 
  out:
