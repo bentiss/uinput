@@ -421,9 +421,15 @@ static int uinput_setup_device(struct uinput_device *udev,
 			goto exit;
 		if (test_bit(ABS_MT_SLOT, dev->absbit)) {
 			int nslot = input_abs_get_max(dev, ABS_MT_SLOT) + 1;
+#ifdef INPUT_MT_POINTER
 			input_mt_init_slots(dev, nslot, 0);
+#else /* INPUT_MT_POINTER */
+			input_mt_init_slots(dev, nslot);
+#endif /* INPUT_MT_POINTER */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
 		} else if (test_bit(ABS_MT_POSITION_X, dev->absbit)) {
 			input_set_events_per_packet(dev, 60);
+#endif /* LINUX_VERSION_CODE >= 2.6.36 */
 		}
 	}
 
@@ -748,7 +754,11 @@ static long uinput_ioctl_handler(struct file *file, unsigned int cmd,
 			break;
 
 		case UI_SET_PROPBIT:
+#ifdef INPUT_PROP_MAX
 			retval = uinput_set_bit(arg, propbit, INPUT_PROP_MAX);
+#else /* INPUT_PROP_MAX */
+			retval = -EINVAL;
+#endif /* INPUT_PROP_MAX */
 			break;
 
 		case UI_SET_PHYS:

@@ -32,6 +32,7 @@
 #ifndef __UINPUT_H_
 #define __UINPUT_H_
 
+#include <linux/backport.h>
 #include <uapi/linux/uinput.h>
 
 #define UINPUT_NAME		"uinput"
